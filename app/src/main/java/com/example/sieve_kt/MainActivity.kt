@@ -1,14 +1,13 @@
 package com.example.sieve_kt
 
+import android.app.UiModeManager.MODE_NIGHT_YES
 import android.content.Context
 import android.os.Bundle
 import android.view.MotionEvent
 import android.view.inputmethod.InputMethodManager
-import android.widget.Button
-import android.widget.EditText
-import android.widget.LinearLayout
-import android.widget.TextView
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import java.math.BigDecimal
 import kotlin.math.pow
 import kotlin.math.sqrt
@@ -69,6 +68,7 @@ class MainActivity : AppCompatActivity() {
         val Reset_btn=findViewById<Button>(R.id.Reset_btn)
         val Inp_text=findViewById<EditText>(R.id.Inp_text)
         val Ans_text=findViewById<TextView>(R.id.Ans_text)
+        val ThemeSwitch=findViewById<Switch>(R.id.ThemeSwitch)
 
         Start_btn.setOnClickListener{
             try {
@@ -86,19 +86,35 @@ class MainActivity : AppCompatActivity() {
                             +"\n\n------処理速度------"+"\n"+
                             BigDecimal.valueOf((endTime - startTime) / 10.0.pow(9.0)).toString() + "秒"+"\n"+
                             BigDecimal.valueOf((endTime - startTime) / 10.0.pow(6.0)).toString() + "ミリ秒"+"\n")
+
+                    // キーボードを隠す
+                    inputMethodManager.hideSoftInputFromWindow(container.windowToken, InputMethodManager.HIDE_NOT_ALWAYS)
+
+                    // 背景にフォーカスを移す
+                    container.requestFocus()
                 }
             }catch (e: Exception){
                 Ans_text.text = "数値が入力されていません"
             }
-
-
         }
 
         Reset_btn.setOnClickListener{
             Inp_text.text.clear()
             Ans_text.text = "2～200万までの整数を入力してください"
+            // キーボードを隠す
+            inputMethodManager.hideSoftInputFromWindow(container.windowToken, InputMethodManager.HIDE_NOT_ALWAYS)
+
+            // 背景にフォーカスを移す
+            container.requestFocus()
         }
 
+        ThemeSwitch.setOnCheckedChangeListener{_, isChecked ->
+            if (isChecked){
+                delegate.localNightMode=AppCompatDelegate.MODE_NIGHT_YES
+            }else{
+                delegate.localNightMode = AppCompatDelegate.MODE_NIGHT_NO
+            }
+        }
     }
 
     // 画面タップ時に呼ばれる

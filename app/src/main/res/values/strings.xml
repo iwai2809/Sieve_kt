@@ -4,4 +4,8 @@
     <string name="start">Start</string>
     <string name="setumei">2～200万までの整数を\n入力してください</string>
     <string name="reset">Reset</string>
+    <string name="theme">テーマの切替</string>
+    <string name="light">ライトテーマに切替</string>
+    <string name="dark">ダークテーマに切替</string>
+    <string name="defaulttheme">デフォルトのテーマに切替</string>
 </resources>

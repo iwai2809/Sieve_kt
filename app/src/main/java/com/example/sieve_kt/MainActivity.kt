@@ -1,8 +1,9 @@
 package com.example.sieve_kt
 
-import android.app.UiModeManager.MODE_NIGHT_YES
 import android.content.Context
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import android.view.MotionEvent
 import android.view.inputmethod.InputMethodManager
 import android.widget.*
@@ -68,7 +69,6 @@ class MainActivity : AppCompatActivity() {
         val Reset_btn=findViewById<Button>(R.id.Reset_btn)
         val Inp_text=findViewById<EditText>(R.id.Inp_text)
         val Ans_text=findViewById<TextView>(R.id.Ans_text)
-        val ThemeSwitch=findViewById<Switch>(R.id.ThemeSwitch)
 
         Start_btn.setOnClickListener{
             try {
@@ -107,14 +107,6 @@ class MainActivity : AppCompatActivity() {
             // 背景にフォーカスを移す
             container.requestFocus()
         }
-
-        ThemeSwitch.setOnCheckedChangeListener{_, isChecked ->
-            if (isChecked){
-                delegate.localNightMode=AppCompatDelegate.MODE_NIGHT_YES
-            }else{
-                delegate.localNightMode = AppCompatDelegate.MODE_NIGHT_NO
-            }
-        }
     }
 
     // 画面タップ時に呼ばれる
@@ -129,6 +121,21 @@ class MainActivity : AppCompatActivity() {
         return false
     }
 
+        override fun onCreateOptionsMenu(menu: Menu): Boolean {
+            menuInflater.inflate(R.menu.option_menu, menu)
+            return true
+        }
 
+        override fun onOptionsItemSelected(item: MenuItem): Boolean {
+            when(item.itemId){
+                R.id.LightTheme->{
+                    delegate.localNightMode = AppCompatDelegate.MODE_NIGHT_NO
+                }
+                R.id.DarkTheme->{
+                    delegate.localNightMode=AppCompatDelegate.MODE_NIGHT_YES
+                }
+            }
+            return true
+        }
 
 }

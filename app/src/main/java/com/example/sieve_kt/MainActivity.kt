@@ -9,6 +9,7 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.room.*
 import java.math.BigDecimal
 import kotlin.math.pow
 import kotlin.math.sqrt
@@ -55,6 +56,64 @@ class MainActivity : AppCompatActivity() {
     // キーボード表示を制御するためのオブジェクト
     private lateinit var inputMethodManager: InputMethodManager
 
+    lateinit var mUserDao: UserDao
+    lateinit var mAdapter: ArrayAdapter<String>
+
+    private var mUserList: List<User> = listOf()
+
+
+    @Entity
+    data class User(
+        @PrimaryKey(autoGenerate = true)
+        val id: Int,
+
+        var name: String,
+
+        @ColumnInfo(name = "log")
+        var log: Int
+    )
+
+    @Dao
+    interface UserDao {
+        @Query("SELECT * FROM user")
+        fun getAll(): List<User>
+
+        @Insert
+        fun insert(user: User)
+
+        @Update
+        fun update(user: User)
+
+        @Delete
+        fun delete(user: User)
+    }
+
+
+    @Database(entities = [User::class], version = 1)
+    abstract class UserDatabase : RoomDatabase() {
+
+        abstract fun userDao(): UserDao
+
+        companion object {
+
+            private var INSTANCE: UserDatabase? = null
+
+            private val lock = Any()
+
+            fun getInstance(context: Context): UserDatabase {
+                synchronized(lock) {
+                    if (INSTANCE == null) {
+                        INSTANCE = Room.databaseBuilder(context.applicationContext,
+                            UserDatabase::class.java, "User.db")
+                            .allowMainThreadQueries()
+                            .build()
+                    }
+                    return INSTANCE!!
+                }
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -65,8 +124,18 @@ class MainActivity : AppCompatActivity() {
         // InputMethodManagerを取得
         inputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
 
+
+        val listView = findViewById<ListView>(R.id.list_view)
+        mUserDao = UserDatabase.getInstance(this).userDao()
+
+        mAdapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, arrayListOf())
+
+        listView.adapter=mAdapter
+        getUser()
+
         val Start_btn=findViewById<Button>(R.id.Start_btn)
         val Reset_btn=findViewById<Button>(R.id.Reset_btn)
+        val delete_btn=findViewById<Button>(R.id.delete_btn)
         val Inp_text=findViewById<EditText>(R.id.Inp_text)
         val Ans_text=findViewById<TextView>(R.id.Ans_text)
 
@@ -86,6 +155,17 @@ class MainActivity : AppCompatActivity() {
                             +"\n\n------処理速度------"+"\n"+
                             BigDecimal.valueOf((endTime - startTime) / 10.0.pow(9.0)).toString() + "秒"+"\n"+
                             BigDecimal.valueOf((endTime - startTime) / 10.0.pow(6.0)).toString() + "ミリ秒"+"\n")
+
+
+                    val database = UserDatabase.getInstance(this)
+                    val userDao = database.userDao()
+
+                    // 新規Userの作成
+                    val newUser = User(0, Text.toString(),test.toInt())
+
+                    // Userの追加
+                    mUserDao.insert(newUser)
+                    getUser()
 
                     // キーボードを隠す
                     inputMethodManager.hideSoftInputFromWindow(container.windowToken, InputMethodManager.HIDE_NOT_ALWAYS)
@@ -107,6 +187,18 @@ class MainActivity : AppCompatActivity() {
             // 背景にフォーカスを移す
             container.requestFocus()
         }
+
+        delete_btn.setOnClickListener{
+            deleteUser()
+        }
+    }
+
+    private fun deleteUser() {
+        if (mUserList.isEmpty()) return
+
+        val deleteUser = mUserList.first()
+        mUserDao.delete(deleteUser)
+        getUser()
     }
 
     // 画面タップ時に呼ばれる
@@ -137,5 +229,12 @@ class MainActivity : AppCompatActivity() {
             }
             return true
         }
+
+    private fun getUser() {
+        mUserList = mUserDao.getAll()
+        val userInfoList = mUserList.map { it.id.toString() + " | " + it.name + "以下の素数の和=" +it.log.toString() }
+        mAdapter.clear()
+        mAdapter.addAll(userInfoList)
+    }
 
 }
